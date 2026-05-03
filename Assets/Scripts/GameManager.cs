@@ -3,6 +3,9 @@ using UnityEngine;
 using UnityEngine.UI;
 
 [DefaultExecutionOrder(-1)]
+
+
+
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance { get; private set; }
@@ -11,6 +14,10 @@ public class GameManager : MonoBehaviour
     [SerializeField] private Spawner spawner;
     [SerializeField] private Text scoreText;
     [SerializeField] private Image fadeImage;
+
+    [SerializeField] private GameObject startMenu;
+
+    [SerializeField] private GameObject gameplayUI;
 
     public int score { get; private set; } = 0;
 
@@ -32,7 +39,12 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
-        NewGame();
+        // Show menu first
+        startMenu.SetActive(true);
+        gameplayUI.SetActive(false);
+
+        blade.enabled = false;
+        spawner.enabled = false;
     }
 
     private void NewGame()
@@ -50,14 +62,12 @@ public class GameManager : MonoBehaviour
 
     private void ClearScene()
     {
-        Fruit[] fruits = FindObjectsOfType<Fruit>();
-
+        Fruit[] fruits = FindObjectsByType<Fruit>(FindObjectsSortMode.None);
         foreach (Fruit fruit in fruits) {
             Destroy(fruit.gameObject);
         }
 
-        Bomb[] bombs = FindObjectsOfType<Bomb>();
-
+        Bomb[] bombs = FindObjectsByType<Bomb>(FindObjectsSortMode.None);
         foreach (Bomb bomb in bombs) {
             Destroy(bomb.gameObject);
         }
@@ -120,4 +130,16 @@ public class GameManager : MonoBehaviour
         }
     }
 
+public void ExitGame()
+    {
+        Application.Quit();
+
+        // For editor testing
+    #if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+    #endif
+    }
+
 }
+
+

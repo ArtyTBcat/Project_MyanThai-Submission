@@ -9,7 +9,7 @@ public class Spawner : MonoBehaviour
     public GameObject[] fruitPrefabs;
     public GameObject bombPrefab;
     [Range(0f, 1f)]
-    public float bombChance = 0.05f;
+    public float bombChance = 0.1f;
 
     public float minSpawnDelay = 0.25f;
     public float maxSpawnDelay = 1f;
@@ -43,9 +43,17 @@ public class Spawner : MonoBehaviour
 
         while (enabled)
         {
+            if (SingleSliceManager.Instance != null &&
+                SingleSliceManager.Instance.CurrentActiveObject != null)
+            {
+                yield return null;
+                continue;
+            }
+
             GameObject prefab = fruitPrefabs[Random.Range(0, fruitPrefabs.Length)];
 
-            if (Random.value < bombChance) {
+            if (Random.value < bombChance)
+            {
                 prefab = bombPrefab;
             }
 
@@ -59,6 +67,18 @@ public class Spawner : MonoBehaviour
             Quaternion rotation = Quaternion.Euler(0f, 0f, Random.Range(minAngle, maxAngle));
 
             GameObject fruit = Instantiate(prefab, position, rotation);
+
+            if (SingleSliceManager.Instance != null &&
+                SingleSliceManager.Instance.CurrentActiveObject != null)
+            {
+                // wait until object is actually gone
+                if (SingleSliceManager.Instance.CurrentActiveObject != null)
+                {
+                    yield return null;
+                    continue;
+                }
+}
+
             Destroy(fruit, maxLifetime);
 
             float force = Random.Range(minForce, maxForce);
@@ -67,5 +87,4 @@ public class Spawner : MonoBehaviour
             yield return new WaitForSeconds(Random.Range(minSpawnDelay, maxSpawnDelay));
         }
     }
-
 }

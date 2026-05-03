@@ -11,6 +11,8 @@ public class Fruit : MonoBehaviour
 
     public int points = 1;
 
+    private bool hasBeenSliced;
+
     private void Awake()
     {
         fruitRigidbody = GetComponent<Rigidbody>();
@@ -18,25 +20,41 @@ public class Fruit : MonoBehaviour
         juiceEffect = GetComponentInChildren<ParticleSystem>();
     }
 
+    public void ForceSlice(Vector3 direction, float force)
+    {
+        if (hasBeenSliced)
+        {
+            return;
+        }
+
+        Slice(direction, transform.position, force);
+    }
+
     private void Slice(Vector3 direction, Vector3 position, float force)
     {
-        GameManager.Instance.IncreaseScore(points);
+        if (hasBeenSliced)
+        {
+            return;
+        }
 
-        // Disable the whole fruit
+        hasBeenSliced = true;
+
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.IncreaseScore(points);
+        }
+
         fruitCollider.enabled = false;
         whole.SetActive(false);
 
-        // Enable the sliced fruit
         sliced.SetActive(true);
         juiceEffect.Play();
 
-        // Rotate based on the slice angle
         float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
         sliced.transform.rotation = Quaternion.Euler(0f, 0f, angle);
 
         Rigidbody[] slices = sliced.GetComponentsInChildren<Rigidbody>();
 
-        // Add a force to each slice based on the blade direction
         foreach (Rigidbody slice in slices)
         {
             slice.linearVelocity = fruitRigidbody.linearVelocity;
@@ -52,5 +70,11 @@ public class Fruit : MonoBehaviour
             Slice(blade.direction, blade.transform.position, blade.sliceForce);
         }
     }
-
+    private void OnDestroy()
+{
+    if (SingleSliceManager.Instance != null)
+    {
+        SingleSliceManager.Instance.ClearCurrentObject(gameObject);
+    }
+}
 }

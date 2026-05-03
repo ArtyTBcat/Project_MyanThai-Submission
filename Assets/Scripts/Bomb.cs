@@ -2,13 +2,37 @@ using UnityEngine;
 
 public class Bomb : MonoBehaviour
 {
-    private void OnTriggerEnter(Collider other)
+    private bool detonated;
+
+    public void ForceExplode()
     {
-        if (other.CompareTag("Player"))
+        if (detonated)
         {
-            GetComponent<Collider>().enabled = false;
+            return;
+        }
+
+        detonated = true;
+
+        GetComponent<Collider>().enabled = false;
+
+        if (GameManager.Instance != null)
+        {
             GameManager.Instance.Explode();
         }
     }
 
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("Player"))
+        {
+            ForceExplode();
+        }
+    }
+    private void OnDestroy()
+{
+    if (SingleSliceManager.Instance != null)
+    {
+        SingleSliceManager.Instance.ClearCurrentObject(gameObject);
+    }
+}
 }

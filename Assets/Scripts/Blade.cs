@@ -5,6 +5,8 @@ public class Blade : MonoBehaviour
     public float sliceForce = 5f;
     public float minSliceVelocity = 0.01f;
 
+    [SerializeField] private bool legacyMouseInput = false;
+
     private Camera mainCamera;
     private Collider sliceCollider;
     private TrailRenderer sliceTrail;
@@ -31,13 +33,49 @@ public class Blade : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetMouseButtonDown(0)) {
+        // ✅ SIMPLE KEY INPUT (X and B)
+        if (GameInputManager.Instance.IsActionPressed(Input.GetKeyDown(KeyCode.X)) || GameInputManager.Instance.IsActionPressed(Input.GetKeyDown(KeyCode.B)))
+        {
+            SliceAnyObject();
+        }
+
+        // KEEP OLD SYSTEM (optional toggle)
+        if (!legacyMouseInput)
+        {
+            return;
+        }
+
+        if (Input.GetMouseButtonDown(0))
+        {
             StartSlice();
-        } else if (Input.GetMouseButtonUp(0)) {
+        }
+        else if (Input.GetMouseButtonUp(0))
+        {
             StopSlice();
-        } else if (slicing) {
+        }
+        else if (slicing)
+        {
             ContinueSlice();
         }
+    }
+
+    private void SliceAnyObject()
+    {
+        Fruit fruit = FindFirstObjectByType<Fruit>();
+        if (fruit != null)
+        {
+            fruit.ForceSlice(Vector3.right, sliceForce);
+            return;
+        }
+
+        Bomb bomb = FindFirstObjectByType<Bomb>();
+        if (bomb != null)
+        {
+            bomb.ForceExplode();
+            return;
+        }
+
+        Debug.Log("No object found to slice");
     }
 
     private void StartSlice()
@@ -63,6 +101,7 @@ public class Blade : MonoBehaviour
     {
         Vector3 newPosition = mainCamera.ScreenToWorldPoint(Input.mousePosition);
         newPosition.z = 0f;
+
         direction = newPosition - transform.position;
 
         float velocity = direction.magnitude / Time.deltaTime;
@@ -70,5 +109,4 @@ public class Blade : MonoBehaviour
 
         transform.position = newPosition;
     }
-
 }
