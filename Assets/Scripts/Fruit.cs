@@ -39,7 +39,7 @@ public class Fruit : MonoBehaviour
         // Add a force to each slice based on the blade direction
         foreach (Rigidbody slice in slices)
         {
-            slice.velocity = fruitRigidbody.velocity;
+            slice.linearVelocity = fruitRigidbody.linearVelocity;
             slice.AddForceAtPosition(direction * force, position, ForceMode.Impulse);
         }
     }
